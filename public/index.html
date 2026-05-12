@@ -45,6 +45,11 @@
    socket.on("disconected", () => {
      console.log("Perdimos la comunicación con el server");
    })
+
+   socket.on("BAND_LIST", (bands) => {
+        console.clear();
+        console.table(bands);
+   })
     
 </script>
 </body>

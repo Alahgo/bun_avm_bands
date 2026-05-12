@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { Server as Engine } from "@socket.io/bun-engine";
 import { SERVER_CONFIG } from "./config/server_config";
+import { bandsService } from "./services/bands.services";
 
 
 export const CreareServer = () =>{
@@ -13,17 +14,36 @@ export const CreareServer = () =>{
     io.bind(engine);
 
     io.on("connection", (socket) => {
-    console.log(`Cliente conectado (socket.id): ${socket.id}`);
+        console.log(`Cliente conectado (socket.id): ${socket.id}`);
 
         socket.emit("saludo", "Hola desde el servidor");
 
         socket.on("chat", (msg)=> io.emit("chat", msg));
+       
+        socket.emit("BANDS_LIST", bandsService.obtinereBands());
+        
+        socket.on("ADD_BAND", (playload: {nomen: string}) =>{
+            if(playload.nomen.trim().length === 0) return;
+             const band = bandsService.addereBand(playload.nomen);
+             io.emit("BANDS_LIST", bandsService.obtinereBands()); 
+        });
+        
+        socket.on("VOTE_BAND", (playload: {id: string}) => {
+            const band = bandsService.addereVotumBand(playload.id);
 
-        io.on("disconnect", () => {
+            if (band){
+                io.emit("BANDS_LIST", bandsService.obtinereBands());
+            }
+        });
+        socket.on("DELETE_BAND", (playload: {id: string}) =>{
+            const band = bandsService.delereBand(playload.id);
+            io.emit("BANDS_LIST", bandsService.obtinereBands());
+        });
+    });
+
+    io.on("disconnect", (socket) => {
             console.log(`Cliente desconectado: ${socket.id}`);
         });
-    })
-
     const { fetch: engineFetch, websocket } = engine.handler();
 
     const server = Bun.serve({
