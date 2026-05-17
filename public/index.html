@@ -46,7 +46,7 @@
      console.log("Perdimos la comunicación con el server");
    })
 
-   socket.on("BAND_LIST", (bands) => {
+   socket.on("BANDS_LIST", (bands) => {
         console.clear();
         console.table(bands);
    })
